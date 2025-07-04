@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Headers, UnauthorizedException, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Headers, UnauthorizedException, UseGuards, Request, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import { RolesGuard } from './roles.guard';
@@ -24,4 +24,7 @@ export class AuthController {
   getUsersBasedOnRole(@Request() req: any) {
     return this.authService.getUsersBasedOnRole(req.user);
   }
+
+  
+
 }

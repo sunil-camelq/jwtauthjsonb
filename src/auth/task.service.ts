@@ -1,7 +1,7 @@
 import { db } from 'src/db/db.connection';
 import { tasks, employees } from 'src/schema/schema';
-import { eq, sql } from 'drizzle-orm';
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { eq, sql, and, gte, lte, between } from 'drizzle-orm';
+import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class TaskService {
@@ -51,4 +51,36 @@ export class TaskService {
       return { message: 'Managers do not have task data access' };
     }
   }
+
+
+  async getTasksByDate(from: string, to: string) {
+    if (!from || !to) {
+      throw new BadRequestException('Please provide both from and to dates');
+    }
+
+    const taskList = await db
+      .select()
+      .from(tasks)
+      .where(between(tasks.createdAt, new Date(from), new Date(to)));
+
+    return { count: taskList.length, tasks: taskList };
+  }
+
+  async getTasksByTime(fromTime: string, toTime: string) {
+    if (!fromTime || !toTime) {
+      throw new BadRequestException('Please provide both from and to times (HH:mm:ss)');
+    }
+
+    const result = await db.execute(sql`
+      SELECT * FROM tasks
+      WHERE to_char(created_at, 'HH24:MI:SS') BETWEEN ${fromTime} AND ${toTime}
+    `);
+
+    return {
+      count: result.rows.length,
+      tasks: result.rows,
+    };
+  }
+  
+ 
 }
